@@ -8,6 +8,7 @@ Uses SQLite for local data storage.
 - Book, edit and delete appointments
 - Dashboard with appointment list
 - Date and time picker for scheduling
+- Doctor selection dropdown
 
 ## Tech Stack
 - Flutter (Material UI)
