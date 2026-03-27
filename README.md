@@ -14,3 +14,20 @@ Uses SQLite for local data storage.
 - Flutter (Material UI)
 - SQLite (sqflite)
 - SharedPreferences for session management
+
+## Screenshots
+
+### Login Screen
+<img src="screenshots/login_screen.png" width="300">
+
+### Register Screen
+<img src="screenshots/register_screen.png" width="300">
+
+### Dashboard
+<img src="screenshots/dashboard_screen.png" width="300">
+
+### Book Appointment
+<img src="screenshots/book_appointment_screen.png" width="300">
+
+### Edit Appointment
+<img src="screenshots/edit_appointment_screen.png" width="300">
