@@ -57,7 +57,12 @@ class _BookingScreenState extends State<BookingScreen> {
     if (!_formKey.currentState!.validate()) return;
     if (_selectedDate == null || _selectedTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please select date and time')),
+        SnackBar(
+          content: const Text('Please select date and time'),
+          behavior: SnackBarBehavior.floating,
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        ),
       );
       return;
     }
@@ -85,23 +90,71 @@ class _BookingScreenState extends State<BookingScreen> {
     Navigator.pop(context);
   }
 
+  InputDecoration _inputDecoration({
+    required String label,
+    required IconData icon,
+    String? hint,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return InputDecoration(
+      labelText: label,
+      hintText: hint,
+      prefixIcon: Icon(icon),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(
+          color: colorScheme.outline.withValues(alpha: 0.3),
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide(color: colorScheme.primary, width: 2),
+      ),
+      filled: true,
+      fillColor: colorScheme.surfaceContainerLowest,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Book Appointment')),
+      appBar: AppBar(
+        title: const Text(
+          'Book Appointment',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+      ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
+        padding: const EdgeInsets.all(20.0),
         child: Form(
           key: _formKey,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // Section label
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Appointment Details',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+              ),
+
+              // Doctor name
               TextFormField(
                 controller: _doctorController,
-                decoration: const InputDecoration(
-                  labelText: 'Doctor Name',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person),
+                decoration: _inputDecoration(
+                  label: 'Doctor Name',
+                  icon: Icons.person_rounded,
+                  hint: 'e.g. Dr. Smith',
                 ),
                 validator: (value) {
                   if (value == null || value.trim().isEmpty) {
@@ -111,62 +164,159 @@ class _BookingScreenState extends State<BookingScreen> {
                 },
               ),
               const SizedBox(height: 16),
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: Colors.grey.shade400),
-                ),
-                leading: const Icon(Icons.calendar_today),
-                title: Text(
-                  _selectedDate != null
-                      ? DateFormat('MMM dd, yyyy').format(_selectedDate!)
-                      : 'Select Date',
-                ),
-                onTap: _pickDate,
+
+              // Date & Time row
+              Row(
+                children: [
+                  Expanded(
+                    child: _DateTimeTile(
+                      icon: Icons.calendar_today_rounded,
+                      label: _selectedDate != null
+                          ? DateFormat('MMM dd, yyyy').format(_selectedDate!)
+                          : 'Select Date',
+                      isSelected: _selectedDate != null,
+                      onTap: _pickDate,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _DateTimeTile(
+                      icon: Icons.access_time_rounded,
+                      label: _selectedTime != null
+                          ? _selectedTime!.format(context)
+                          : 'Select Time',
+                      isSelected: _selectedTime != null,
+                      onTap: _pickTime,
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              ListTile(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: BorderSide(color: Colors.grey.shade400),
+              const SizedBox(height: 24),
+
+              // Optional section label
+              Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Text(
+                  'Additional Info (Optional)',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                  ),
                 ),
-                leading: const Icon(Icons.access_time),
-                title: Text(
-                  _selectedTime != null
-                      ? _selectedTime!.format(context)
-                      : 'Select Time',
-                ),
-                onTap: _pickTime,
               ),
-              const SizedBox(height: 16),
+
               TextFormField(
                 controller: _patientController,
-                decoration: const InputDecoration(
-                  labelText: 'Patient Name (optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.person_outline),
+                decoration: _inputDecoration(
+                  label: 'Patient Name',
+                  icon: Icons.person_outline_rounded,
                 ),
               ),
               const SizedBox(height: 16),
               TextFormField(
                 controller: _reasonController,
                 maxLines: 3,
-                decoration: const InputDecoration(
-                  labelText: 'Reason (optional)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.notes),
+                decoration: _inputDecoration(
+                  label: 'Reason',
+                  icon: Icons.notes_rounded,
                 ),
               ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _isSaving ? null : _saveAppointment,
-                child: _isSaving
-                    ? const SizedBox(
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Book Appointment'),
+              const SizedBox(height: 32),
+              SizedBox(
+                height: 50,
+                child: FilledButton.icon(
+                  onPressed: _isSaving ? null : _saveAppointment,
+                  icon: _isSaving
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            color: Colors.white,
+                          ),
+                        )
+                      : const Icon(Icons.check_rounded),
+                  label: Text(
+                    _isSaving ? 'Saving...' : 'Book Appointment',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Reusable tile widget for date/time selection.
+class _DateTimeTile extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _DateTimeTile({
+    required this.icon,
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Material(
+      color: isSelected
+          ? colorScheme.primaryContainer.withValues(alpha: 0.4)
+          : colorScheme.surfaceContainerLowest,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isSelected
+                  ? colorScheme.primary.withValues(alpha: 0.5)
+                  : colorScheme.outline.withValues(alpha: 0.3),
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                icon,
+                size: 20,
+                color: isSelected
+                    ? colorScheme.primary
+                    : colorScheme.onSurface.withValues(alpha: 0.5),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                    color: isSelected
+                        ? colorScheme.onSurface
+                        : colorScheme.onSurface.withValues(alpha: 0.5),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
