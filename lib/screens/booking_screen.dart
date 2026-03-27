@@ -14,7 +14,21 @@ class BookingScreen extends StatefulWidget {
 
 class _BookingScreenState extends State<BookingScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _doctorController = TextEditingController();
+
+  static const List<String> _doctors = [
+    'Dr. Arjun Mehta',
+    'Dr. Priya Sharma',
+    'Dr. Rohan Kapoor',
+    'Dr. Neha Verma',
+    'Dr. Vikram Singh',
+    'Dr. Anjali Desai',
+    'Dr. Karan Malhotra',
+    'Dr. Sneha Iyer',
+    'Dr. Rahul Nair',
+    'Dr. Pooja Reddy',
+  ];
+
+  String? _selectedDoctor;
   final _patientController = TextEditingController();
   final _reasonController = TextEditingController();
   final _dbHelper = DBHelper();
@@ -25,7 +39,6 @@ class _BookingScreenState extends State<BookingScreen> {
 
   @override
   void dispose() {
-    _doctorController.dispose();
     _patientController.dispose();
     _reasonController.dispose();
     super.dispose();
@@ -71,7 +84,7 @@ class _BookingScreenState extends State<BookingScreen> {
 
     final appointment = Appointment(
       userId: widget.userId,
-      doctorName: _doctorController.text.trim(),
+      doctorName: _selectedDoctor!,
       appointmentDate: DateFormat('yyyy-MM-dd').format(_selectedDate!),
       appointmentTime: _selectedTime!.format(context),
       patientName: _patientController.text.trim().isEmpty
@@ -148,17 +161,25 @@ class _BookingScreenState extends State<BookingScreen> {
                 ),
               ),
 
-              // Doctor name
-              TextFormField(
-                controller: _doctorController,
+              // Doctor dropdown
+              DropdownButtonFormField<String>(
+                value: _selectedDoctor,
                 decoration: _inputDecoration(
-                  label: 'Doctor Name',
+                  label: 'Select Doctor',
                   icon: Icons.person_rounded,
-                  hint: 'e.g. Dr. Smith',
                 ),
+                items: _doctors.map((doctor) {
+                  return DropdownMenuItem(
+                    value: doctor,
+                    child: Text(doctor),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => _selectedDoctor = value);
+                },
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter doctor name';
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a doctor';
                   }
                   return null;
                 },

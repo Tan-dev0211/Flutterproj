@@ -14,7 +14,21 @@ class EditAppointmentScreen extends StatefulWidget {
 
 class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   final _formKey = GlobalKey<FormState>();
-  late TextEditingController _doctorController;
+
+  static const List<String> _doctors = [
+    'Dr. Arjun Mehta',
+    'Dr. Priya Sharma',
+    'Dr. Rohan Kapoor',
+    'Dr. Neha Verma',
+    'Dr. Vikram Singh',
+    'Dr. Anjali Desai',
+    'Dr. Karan Malhotra',
+    'Dr. Sneha Iyer',
+    'Dr. Rahul Nair',
+    'Dr. Pooja Reddy',
+  ];
+
+  String? _selectedDoctor;
   late TextEditingController _patientController;
   late TextEditingController _reasonController;
   final _dbHelper = DBHelper();
@@ -26,8 +40,9 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
   @override
   void initState() {
     super.initState();
-    _doctorController =
-        TextEditingController(text: widget.appointment.doctorName);
+    _selectedDoctor = _doctors.contains(widget.appointment.doctorName)
+        ? widget.appointment.doctorName
+        : null;
     _patientController =
         TextEditingController(text: widget.appointment.patientName ?? '');
     _reasonController =
@@ -58,7 +73,6 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
 
   @override
   void dispose() {
-    _doctorController.dispose();
     _patientController.dispose();
     _reasonController.dispose();
     super.dispose();
@@ -105,7 +119,7 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
     final updated = Appointment(
       id: widget.appointment.id,
       userId: widget.appointment.userId,
-      doctorName: _doctorController.text.trim(),
+      doctorName: _selectedDoctor!,
       appointmentDate: DateFormat('yyyy-MM-dd').format(_selectedDate!),
       appointmentTime: _selectedTime!.format(context),
       patientName: _patientController.text.trim().isEmpty
@@ -181,15 +195,24 @@ class _EditAppointmentScreenState extends State<EditAppointmentScreen> {
                   ),
                 ),
               ),
-              TextFormField(
-                controller: _doctorController,
+              DropdownButtonFormField<String>(
+                value: _selectedDoctor,
                 decoration: _inputDecoration(
-                  label: 'Doctor Name',
+                  label: 'Select Doctor',
                   icon: Icons.person_rounded,
                 ),
+                items: _doctors.map((doctor) {
+                  return DropdownMenuItem(
+                    value: doctor,
+                    child: Text(doctor),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  setState(() => _selectedDoctor = value);
+                },
                 validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter doctor name';
+                  if (value == null || value.isEmpty) {
+                    return 'Please select a doctor';
                   }
                   return null;
                 },
